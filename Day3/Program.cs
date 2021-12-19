@@ -4,49 +4,31 @@
 
 var numberOfBits = sourceData.First().Length;
 
-char[,] GetTransformedData(char[][] originalData)
+char GetCharacter(int columnIndex, char[][] data, bool mostCommon = true)
 {
-    var numberOfLines = originalData.Length;
-    var transformedData = new char[numberOfBits, numberOfLines];
-    for (int i = 0; i < numberOfLines; i++)
-    {
-        for (int j = 0; j < numberOfBits; j++)
-        {
-            transformedData[j, i] = originalData[i][j];
-        }
-    }
+    var numberOfRows = data.GetLength(0);
 
-    return transformedData;
-}
-
-char GetCharacter(int columnIndex, char[,] data, bool mostCommon = true)
-{
-    var numberOfLines = data.GetLength(1);
-
-    var c = Enumerable.Range(0, numberOfLines)
-        .Select(x => data[columnIndex, x])
-        .ToArray()
+    var groupedColumn = Enumerable.Range(0, numberOfRows)
+        .Select(x => data[x][columnIndex])
         .GroupBy(character => character);
+    
+    groupedColumn = mostCommon
+        ? groupedColumn.OrderByDescending(grouping => grouping.Count()).ThenByDescending(group => group.Key)
+        : groupedColumn.OrderBy(grouping => grouping.Count()).ThenBy(group => group.Key);
 
-    c = mostCommon
-        ? c.OrderByDescending(grouping => grouping.Count()).ThenByDescending(group => group.Key)
-        : c.OrderBy(grouping => grouping.Count()).ThenBy(group => group.Key);
-
-    var result = c.Select(grouping => grouping.Key).First();
-    return result;
+    var character = groupedColumn.Select(grouping => grouping.Key).First();
+    return character;
 }
 
 string GetFilteredList(char[][] data, bool mostCommon = true)
 {
-    var listToFilter = data;
-    for (int i = 0; i < numberOfBits && listToFilter.Length > 1; i++)
+    for (int i = 0; i < numberOfBits && data.Length > 1; i++)
     {
-        var transformedData = GetTransformedData(listToFilter);
-        var character = GetCharacter(i, transformedData, mostCommon);
-        listToFilter = listToFilter.Where(entry => entry[i] == character).ToArray();
+        var character = GetCharacter(i, data, mostCommon);
+        data = data.Where(entry => entry[i] == character).ToArray();
     }
 
-    return new string(listToFilter.Single());
+    return new string(data.Single());
 }
 
 int BitStringToInt(string bitString)
@@ -57,11 +39,10 @@ int BitStringToInt(string bitString)
 void Part1()
 {
     var gammaString = string.Empty;
-    var transformedData = GetTransformedData(sourceData);
 
     for (int i = 0; i < numberOfBits; i++)
     {
-        gammaString += GetCharacter(i, transformedData);
+        gammaString += GetCharacter(i, sourceData);
     }
 
     var epsilonString = new string(gammaString.Select(character => character == '1' ? '0' : '1').ToArray());
@@ -74,9 +55,6 @@ void Part1()
 
 void Part2()
 {
-    // Oxygen - most common bit, if equal, '1' takes precedence
-    // Filter until there's only one entry
-
     var oxygenGeneratorRating = GetFilteredList(sourceData);
     var co2ScrubberRating = GetFilteredList(sourceData, false);
     var oxInt = BitStringToInt(oxygenGeneratorRating);
