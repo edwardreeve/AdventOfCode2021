@@ -1,9 +1,8 @@
 ﻿var sourceData = File.ReadLines("Day4Data.txt").ToArray();
+var bingoCalls = sourceData.First().Split(",");
 
 void Part1()
 {
-    var bingoCalls = sourceData.First().Split(",");
-
     var bingoBoards = sourceData.Take(1..)
         .Where(dataRow => !string.IsNullOrEmpty(dataRow))
         .Chunk(5)
@@ -29,13 +28,39 @@ void Part1()
     }
 }
 
+void Part2()
+{
+    var bingoBoards = sourceData.Take(1..)
+        .Where(dataRow => !string.IsNullOrEmpty(dataRow))
+        .Chunk(5)
+        .Select(boardData => new BingoBoard(boardData))
+        .ToList();
+    
+    var loserFound = false;
+    foreach (var call in bingoCalls)
+    {
+        for (var i = 0; i < bingoBoards.Count; i++)
+        {
+            var board = bingoBoards[i];
+            if(board.PreviouslyWon) continue;
+            board.MarkCall(call);
+            if (!board.HasWinningLine() || bingoBoards.Count(x => x.PreviouslyWon) != bingoBoards.Count) continue;
+            var score = board.CalculateScore(call);
+            Console.WriteLine($"Losing board found. Score = {score}");
+        }
+        if (loserFound) break;
+    }
+}
+
 Part1();
+Part2();
 
 public class BingoBoard
 {
     private List<int> _boardData;
     private List<int> _results;
     private int _matchedNumber = -1;
+    public bool PreviouslyWon { get; private set; }
 
     public BingoBoard(string[] boardData)
     {
@@ -75,13 +100,15 @@ public class BingoBoard
             (3, 8, 13, 18, 23),
             (4, 9, 14, 19, 24)
         };
-        
+
         var winningLines = rows.Union(columns);
         bool winner = false;
         foreach (var (a, b, c, d, e) in winningLines)
         {
-            if (new[] {_results[a], _results[b], _results[c], _results[d], _results[e]}.Distinct().Count() != 1) continue;
+            if (new[] { _results[a], _results[b], _results[c], _results[d], _results[e] }.Distinct().Count() !=
+                1) continue;
             winner = true;
+            PreviouslyWon = true;
             break;
         }
 
