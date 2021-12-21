@@ -14,25 +14,43 @@ void Part1()
     }
 
     var result = coordinates.GroupBy(x => x).Count(group => group.Count() >= 2);
-    Console.WriteLine($"The part1 answer is {result}");
+    Console.WriteLine($"The part 1 answer is {result}");
+}
+
+void Part2()
+{
+    var coordinates = new List<(int, int)>();
+    foreach (var line in sourceData)
+    {
+        coordinates.AddRange(line.GetCoordinates());
+    }
+
+    var result = coordinates.GroupBy(x => x).Count(group => group.Count() >= 2);
+    Console.WriteLine($"The part 2 answer is {result}");
 }
 
 Part1();
+Part2();
 
-record Line(int x1, int x2, int y1, int y2)
+
+internal record Line(int x1, int x2, int y1, int y2)
 {
-    public List<(int, int)> GetCoordinates()
+    public IEnumerable<(int, int)> GetCoordinates()
     {
         var numberOfCoordinates = Math.Max(Math.Abs(x1 - x2), Math.Abs(y1 - y2));
-        var largestX = Math.Max(x1, x2);
-        var largestY = Math.Max(y1, y2);
         var xDifference = x1 != x2;
         var yDifference = y1 != y2;
         var coordinates = new List<(int, int)>();
         
-        for (int i = 0; i <= numberOfCoordinates; i++)
+        for (var i = 0; i <= numberOfCoordinates; i++)
         {
-            coordinates.Add((xDifference ? largestX - i : largestX, yDifference ? largestY - i : largestY));
+            coordinates.Add((
+                xDifference
+                    ? x1 > x2 ? x1 - i : x1 + i
+                    : x1,
+                yDifference
+                    ? y1 > y2 ? y1 - i : y1 + i
+                    : y1));
         }
 
         return coordinates;
