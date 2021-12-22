@@ -6,29 +6,58 @@
 
 void Part1(int days)
 {
-    var fishToCount = sourceData.ToList();
-
-    for (int j = 0; j < days; j++)
+    var fishes = sourceData.Select(x => new Fish(x));
+    ulong totalFish = 0;
+    foreach (var fish in fishes)
     {
-        var extraFish = 0;
-        for (int i = 0; i < fishToCount.Count; i++)
-        {
-            var number = fishToCount[i];
-            var newFish = number == 0;
-            fishToCount[i] = newFish ? 6 : number - 1;
-            if (newFish) extraFish++;
-        }
-
-        var fishToAdd = new List<int>();
-        for (int i = 0; i < extraFish; i++)
-        {
-            fishToAdd.Add(8);
-        }
-        fishToCount.AddRange(fishToAdd);
+        totalFish += fish.IncreaseAge(days).CountFamily();
     }
-    
-    Console.WriteLine($"Part 1 answer: after {days} days, there would be {fishToCount.Count} lanternfish");
+    Console.WriteLine($"After {days} days, there would be {totalFish} lanternfish");
 }
+
+
 
 Part1(80);
 // Part1(256);
+
+public class Fish
+{
+    private int _daysUntilBirth;
+    private List<Fish> _children = new();
+    public Fish(int daysUntilBirth)
+    {
+        _daysUntilBirth = daysUntilBirth;
+    }
+
+    public Fish IncreaseAge(int days)
+    {
+        for (var i = 0; i < days; i++)
+        {
+            AddDay();
+        }
+
+        return this;
+    }
+
+    public ulong CountFamily()
+    {
+        ulong result = 1;
+        foreach (var child in _children)
+        {
+            result += child.CountFamily();
+        }
+
+        return result;
+    }
+
+    private void AddDay()
+    {
+        var giveBirth = _daysUntilBirth == 0;
+        _daysUntilBirth = giveBirth ? 6 : _daysUntilBirth - 1;
+        foreach (var child in _children)
+        {
+            child.AddDay();
+        }
+        if (giveBirth) _children.Add(new Fish(8));
+    }
+}
