@@ -16,8 +16,18 @@ void Part1()
     Console.WriteLine($"The answer for part 1 is {minFuelUsed}");
 }
 
+int CalculateFuel(int positionsMoved)
+{
+    return Enumerable.Range(1, positionsMoved).Select(x => x).Sum();
+}
+
 void Part2()
 {
+    var minFuelUsed = Enumerable.Range(minCrab, positionsInRange)
+        .Select(x => sourceData.Select(d => CalculateFuel(Math.Abs(d - x))).Sum())
+        .Min();
+
+    Console.WriteLine($"The answer for part 2 is {minFuelUsed}");
 }
 
 Part1();
