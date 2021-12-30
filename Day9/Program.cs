@@ -8,45 +8,19 @@ void Part1()
 {
     var lowestPoints = new List<int>();
     
-    for (var i = 0; i < sourceData.Length; i++)
+    for (var rowIndex = 0; rowIndex < sourceData.Length; rowIndex++)
     {
-        var sourceRow = sourceData[i];
-        for (var j = 0; j < sourceRow.Length; j++)
+        var row = sourceData[rowIndex];
+        for (var depthIndex = 0; depthIndex < row.Length; depthIndex++)
         {
-            var depthReading = sourceRow[j];
-            if (j > 0) 
-            {
-                if (sourceRow[j - 1] <= depthReading)
-                {
-                    continue;
-                }
-            }
+            var depth = row[depthIndex];
+            
+            if (depthIndex > 0) if (row[depthIndex - 1] <= depth) continue;
+            if (depthIndex < row.Length - 1) if (row[depthIndex + 1] <= depth) continue;
+            if (rowIndex > 0) if (sourceData[rowIndex - 1][depthIndex] <= depth) continue;
+            if (rowIndex < sourceData.Length - 1) if (sourceData[rowIndex + 1][depthIndex] <= depth) continue;
 
-            if (j < sourceRow.Length - 1) 
-            {
-                if (sourceRow[j + 1] <= depthReading)
-                {
-                    continue;
-                }
-            }
-
-            if (i > 0) 
-            {
-                if (sourceData[i - 1][j] <= depthReading)
-                {
-                    continue;
-                }
-            }
-
-            if (i < sourceData.Length - 1)
-            {
-                if (sourceData[i + 1][j] <= depthReading)
-                {
-                    continue;
-                }
-            }
-
-            lowestPoints.Add(depthReading);
+            lowestPoints.Add(depth);
         }
     }
 
